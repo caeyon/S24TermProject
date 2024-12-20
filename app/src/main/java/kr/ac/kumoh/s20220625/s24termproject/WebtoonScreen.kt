@@ -40,7 +40,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import android.net.Uri
 import androidx.compose.foundation.Canvas
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.ui.platform.LocalContext
 
 enum class WebtoonScreen {
@@ -189,7 +193,8 @@ fun AuthorList(viewModel: WebtoonViewModel = viewModel()) {
 
 @Composable
 fun AuthorItem(author: Author) {
-    var (expanded, setExpanded) = remember { mutableStateOf(false) }
+    val (expanded, setExpanded) = remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Card(
         modifier = Modifier
@@ -224,13 +229,32 @@ fun AuthorItem(author: Author) {
             visible = expanded,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            author.serialwork.let {
-                Text(
-                    it.replace("\\n","\n"),
-                    //textAlign = TextAlign.Center,
-                )
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center
+            ) {
+                author.serialwork.let {
+                    Text(
+                        it.replace("\\n","\n"),
+                        //textAlign = TextAlign.Center,
+                    )
+                }
+
+                Button(onClick = {
+                    val intent = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(author.snsurl)
+                    )
+                    context.startActivity(intent)
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.Home,
+                        contentDescription = "작가 SNS",
+                    )
+                    Text("SNS")
+                }
             }
-            //Uri 버튼 추가..
+
         }
     }
 }
