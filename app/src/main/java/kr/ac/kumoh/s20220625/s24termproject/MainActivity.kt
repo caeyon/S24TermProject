@@ -39,9 +39,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import coil3.compose.AsyncImage
 import kr.ac.kumoh.s20220625.s24termproject.ui.theme.S24TermProjectTheme
 
@@ -58,7 +60,12 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen(viewModel: WebtoonViewModel = viewModel()) {
+fun MainScreen() {
+    val viewModel: WebtoonViewModel = viewModel()
+    val webtoonList by viewModel.webtoonList.observeAsState(emptyList())
+    val authorList by viewModel.authorList.observeAsState(emptyList())
+    val webtoonInfoList by viewModel.webtoonInfoList.observeAsState(emptyList())
+
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         val navController = rememberNavController()
 
@@ -68,24 +75,30 @@ fun MainScreen(viewModel: WebtoonViewModel = viewModel()) {
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(route = WebtoonScreen.Webtoon.name) {
-                WebtoonList()
+                WebtoonList() {
+                    navController.navigate(it) {
+                        launchSingleTop = true
+                        popUpTo(it) { inclusive = true }
+                    }
+                }
             }
-            composable(route = WebtoonScreen.WebtoonInfo.name) {
-                WebtoonInfo()
+            composable(
+                route = WebtoonScreen.WebtoonInfo.name + "/{id}",
+                arguments = listOf(navArgument("id") {
+                    type = NavType.IntType
+                })
+            ) {
+                val id = it.arguments?.getInt("id") ?: -1
+                val webtoon = webtoonList.find { webtoon -> webtoon.id == id }
+                val author = authorList.find { author -> author.id == webtoon!!.authorid }
+                val webtoonInfo = webtoonInfoList.find { webtoonInfo -> webtoonInfo.webtoonid == id }
+                if (webtoon != null && author != null && webtoonInfo != null) {
+                    WebtoonInfo(webtoon, author, webtoonInfo)
+                }
             }
             composable(route = WebtoonScreen.Author.name) {
                 AuthorList()
             }
         }
-//        AuthorList( //작가 리스트
-//            list = authorList,
-//            modifier = Modifier.padding(innerPadding)
-//        )
-
-//        WebtoonList( //작가 리스트 같이 넘기기 추가
-//            webtoonList = webtoonList,
-//            authorList = authorList,
-//            modifier = Modifier.padding(innerPadding)
-//        )
     }
 }

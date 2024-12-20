@@ -7,6 +7,6 @@ data class WebtoonInfo(
     val favorites: Int,
     val status: String,
     val updateschedule: String,
-    val description: String,
+    val description: String?,
     val webtoonurl: String,
 )

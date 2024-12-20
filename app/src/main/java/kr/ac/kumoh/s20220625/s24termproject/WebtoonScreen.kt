@@ -16,7 +16,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -25,8 +28,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -39,7 +45,10 @@ enum class WebtoonScreen {
 }
 
 @Composable
-fun WebtoonList(viewModel: WebtoonViewModel = viewModel()) {
+fun WebtoonList(
+    viewModel: WebtoonViewModel = viewModel(),
+    onNavigate: (String) -> Unit
+) {
     val webtoonList by viewModel.webtoonList.observeAsState(emptyList())
     val authorList by viewModel.authorList.observeAsState(emptyList())
 
@@ -50,14 +59,22 @@ fun WebtoonList(viewModel: WebtoonViewModel = viewModel()) {
     ) {
         items(webtoonList) { webtoon ->
             val author = authorList.find { it.id == webtoon.authorid } //작가 이름 찾기
-            WebtoonItem(webtoon, author!!.name)
+            WebtoonItem(webtoon, author!!.name, onNavigate)
         }
     }
 }
 
 @Composable
-fun WebtoonItem(webtoon: Webtoon, author: String) {
+fun WebtoonItem(
+    webtoon: Webtoon,
+    author: String,
+    onNavigate: (String) -> Unit
+) {
     Card(
+        modifier = Modifier
+            .clickable{
+                onNavigate(WebtoonScreen.WebtoonInfo.name + "/${webtoon.id}")
+            },
         elevation = CardDefaults.cardElevation(8.dp),
     ) {
         Row(
@@ -86,8 +103,54 @@ fun WebtoonItem(webtoon: Webtoon, author: String) {
 }
 
 @Composable
-fun WebtoonInfo() {
+fun WebtoonInfo(webtoon: Webtoon, author: Author, webtoonInfo: WebtoonInfo) {
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            webtoon.title,
+            fontSize = 40.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 45.sp
+        )
+        Spacer(modifier = Modifier.height(16.dp))
 
+        AsyncImage(
+            model = webtoon.thumbnailurl,
+            contentDescription = "웹툰 이미지",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(400.dp),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = author.imageurl,
+                contentDescription = "작가 이미지",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(CircleShape)
+            )
+            Text(author.name, fontSize = 30.sp)
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        webtoonInfo.description?.let {
+            Text(
+                text = it.replace("\\n","\n"),
+                fontSize = 30.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 35.sp
+            )
+        }
+    }
 }
 
 @Composable
