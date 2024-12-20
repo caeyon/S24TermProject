@@ -26,16 +26,24 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -95,9 +103,18 @@ fun MainScreen() {
         },
         gesturesEnabled = true,
     ) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-
-
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {TopBar(drawerState)},
+            bottomBar = {
+                BottomNavigationBar {
+                    navController.navigate(it) {
+                        launchSingleTop = true
+                        popUpTo(it) { inclusive = true }
+                    }
+                }
+            },
+        ) { innerPadding ->
             NavHost(
                 navController = navController,
                 startDestination = WebtoonScreen.Webtoon.name,
@@ -172,6 +189,70 @@ fun DrawerSheet(
                     Icons.Filled.Face,
                     contentDescription = "작가 리스트 아이콘"
                 )
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopBar(drawerState: DrawerState) {
+    val scope = rememberCoroutineScope()
+
+    CenterAlignedTopAppBar(
+        title = { Text("웹툰 정보") },
+        navigationIcon = {
+            IconButton(
+                onClick = {
+                    scope.launch {
+                        drawerState.open()
+                    }
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "메뉴 아이콘"
+                )
+            }
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            titleContentColor = MaterialTheme.colorScheme.primary,
+        ),
+    )
+}
+
+@Composable
+fun BottomNavigationBar(onNavigate: (String) -> Unit) {
+    NavigationBar {
+        NavigationBarItem(
+            label = {
+                Text("웹툰")
+            },
+            icon = {
+                Icon(
+                    Icons.Filled.Info,
+                    contentDescription = "웹툰 리스트 아이콘"
+                )
+            },
+            selected = false,
+            onClick = {
+                onNavigate(WebtoonScreen.Webtoon.name)
+            }
+        )
+        NavigationBarItem(
+            label = {
+                Text("작가")
+            },
+            icon = {
+                Icon(
+                    Icons.Filled.Face,
+                    contentDescription = "작가 리스트 아이콘"
+                )
+            },
+            selected = false,
+            onClick = {
+                onNavigate(WebtoonScreen.Author.name)
             }
         )
     }
