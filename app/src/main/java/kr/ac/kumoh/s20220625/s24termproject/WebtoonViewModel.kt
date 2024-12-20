@@ -15,6 +15,14 @@ class WebtoonViewModel : ViewModel() {
     val authorList: LiveData<List<Author>>
         get() = _authorList
 
+    private val _webtoonList = MutableLiveData<List<Webtoon>>()
+    val webtoonList: LiveData<List<Webtoon>>
+        get() = _webtoonList
+
+    private val _webtoonInfoList = MutableLiveData<List<WebtoonInfo>>()
+    val webtoonInfoList: LiveData<List<WebtoonInfo>>
+        get() = _webtoonInfoList
+
     init { //처음에 ViewModel 생길 때 실행됨
         val retrofit = Retrofit.Builder()
             .baseUrl(DBApiConfig.SERVER_URL)
@@ -29,8 +37,12 @@ class WebtoonViewModel : ViewModel() {
         // Coroutine 사용
         viewModelScope.launch {
             try {
-                val response = dBApi.getAuthors()
-                _authorList.value = response
+                val response1 = dBApi.getAuthors()
+                val response2 = dBApi.getWebtoons()
+                val response3 = dBApi.getWebtoonInfo()
+                _authorList.value = response1
+                _webtoonList.value = response2
+                _webtoonInfoList.value = response3
             } catch(e: Exception) {
                 Log.e("fetchData()", e.toString())
             }

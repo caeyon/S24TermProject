@@ -14,7 +14,7 @@ interface DBApi {
         @Query("apikey") apiKey: String = DBApiConfig.API_KEY
     ): List<Webtoon>
 
-    @GET("webtoonInfo")
+    @GET("webtooninfo")
     suspend fun getWebtoonInfo(
         @Query("apikey") apiKey: String = DBApiConfig.API_KEY
     ): List<WebtoonInfo>
