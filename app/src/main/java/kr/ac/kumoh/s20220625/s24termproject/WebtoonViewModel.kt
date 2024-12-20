@@ -11,6 +11,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class WebtoonViewModel : ViewModel() {
     private val dBApi: DBApi
+    private val webtoonModel: WebtoonModel
+
     private val _authorList = MutableLiveData<List<Author>>()
     val authorList: LiveData<List<Author>>
         get() = _authorList
@@ -30,19 +32,17 @@ class WebtoonViewModel : ViewModel() {
             .build()
 
         dBApi = retrofit.create(DBApi::class.java)
-        fetchData() //서버의 데이터 가져오는 함수
+        webtoonModel = WebtoonModel(dBApi)
+        fetchData()
     }
 
     private fun fetchData() {
         // Coroutine 사용
         viewModelScope.launch {
             try {
-                val response1 = dBApi.getAuthors()
-                val response2 = dBApi.getWebtoons()
-                val response3 = dBApi.getWebtoonInfo()
-                _authorList.value = response1
-                _webtoonList.value = response2
-                _webtoonInfoList.value = response3
+                _authorList.value = webtoonModel.getAuthors()
+                _webtoonList.value = webtoonModel.getWebtoons()
+                _webtoonInfoList.value = webtoonModel.getWebtoonInfo()
             } catch(e: Exception) {
                 Log.e("fetchData()", e.toString())
             }
