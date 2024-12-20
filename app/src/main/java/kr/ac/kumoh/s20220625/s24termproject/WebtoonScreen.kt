@@ -41,6 +41,7 @@ import coil3.compose.AsyncImage
 import android.net.Uri
 import androidx.compose.foundation.Canvas
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
@@ -95,14 +96,14 @@ fun WebtoonItem(
             AsyncImage(
                 model = webtoon.thumbnailurl,
                 contentDescription = "웹툰 이미지 ${webtoon.title}",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(120.dp)
-                //.clip(RoundedCornerShape(percent = 10)),
             )
             Spacer(modifier = Modifier.width(10.dp))
             Column(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center //수정 필요
+                verticalArrangement = Arrangement.SpaceAround
             ) {
                 TextTitle(webtoon.title)
                 TextAuthor(author)
@@ -127,12 +128,27 @@ fun WebtoonInfo(webtoon: Webtoon, author: Author, webtoonInfo: WebtoonInfo) {
             textAlign = TextAlign.Center,
             lineHeight = 45.sp
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Favorite,
+                contentDescription = "작가 SNS",
+            )
+            Text(
+                webtoonInfo.favorites.toString(),
+                fontSize = 20.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 35.sp
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
 
         AsyncImage(
             model = webtoon.thumbnailurl,
             contentDescription = "웹툰 이미지",
-            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(400.dp),
         )
@@ -151,17 +167,36 @@ fun WebtoonInfo(webtoon: Webtoon, author: Author, webtoonInfo: WebtoonInfo) {
             )
             Text(author.name, fontSize = 30.sp)
         }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                webtoonInfo.status,
+                fontSize = 20.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 35.sp
+            )
+            Text("  |  ")
+            Text(
+                webtoonInfo.updateschedule,
+                fontSize = 20.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 35.sp
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
 
         webtoonInfo.description?.let {
             Text(
                 text = it.replace("\\n","\n"),
-                fontSize = 30.sp,
+                fontSize = 25.sp,
                 textAlign = TextAlign.Center,
                 lineHeight = 35.sp
             )
         }
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(onClick = {
             val intent = Intent(
@@ -170,7 +205,10 @@ fun WebtoonInfo(webtoon: Webtoon, author: Author, webtoonInfo: WebtoonInfo) {
             )
             context.startActivity(intent)
         }) {
-            //아이콘 추가하기
+            Icon(
+                imageVector = Icons.Filled.Star,
+                contentDescription = "작가 SNS",
+            )
             Text("웹툰 보러가기")
         }
     }
@@ -217,9 +255,10 @@ fun AuthorItem(author: Author) {
                     .clip(RoundedCornerShape(percent = 10)),
             )
             Spacer(modifier = Modifier.width(10.dp))
+
             Column(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.SpaceAround
             ) {
                 TextName(author.name)
                 TextBirth(author.birth)
@@ -240,7 +279,9 @@ fun AuthorItem(author: Author) {
                     )
                 }
 
-                Button(onClick = {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
                     val intent = Intent(
                         Intent.ACTION_VIEW,
                         Uri.parse(author.snsurl)
@@ -254,7 +295,6 @@ fun AuthorItem(author: Author) {
                     Text("SNS")
                 }
             }
-
         }
     }
 }
