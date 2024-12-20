@@ -1,5 +1,6 @@
 package kr.ac.kumoh.s20220625.s24termproject
 
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +38,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
+import android.net.Uri
+import androidx.compose.foundation.Canvas
+import androidx.compose.material3.Button
+import androidx.compose.ui.platform.LocalContext
 
 enum class WebtoonScreen {
     Webtoon,
@@ -104,6 +109,8 @@ fun WebtoonItem(
 
 @Composable
 fun WebtoonInfo(webtoon: Webtoon, author: Author, webtoonInfo: WebtoonInfo) {
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -149,6 +156,18 @@ fun WebtoonInfo(webtoon: Webtoon, author: Author, webtoonInfo: WebtoonInfo) {
                 textAlign = TextAlign.Center,
                 lineHeight = 35.sp
             )
+        }
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Button(onClick = {
+            val intent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse(webtoonInfo.webtoonurl)
+            )
+            context.startActivity(intent)
+        }) {
+            //아이콘 추가하기
+            Text("웹툰 보러가기")
         }
     }
 }
