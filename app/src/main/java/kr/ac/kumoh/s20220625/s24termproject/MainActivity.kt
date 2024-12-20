@@ -22,15 +22,27 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -45,6 +57,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil3.compose.AsyncImage
+import kotlinx.coroutines.launch
 import kr.ac.kumoh.s20220625.s24termproject.ui.theme.S24TermProjectTheme
 
 class MainActivity : ComponentActivity() {
@@ -66,39 +79,100 @@ fun MainScreen() {
     val authorList by viewModel.authorList.observeAsState(emptyList())
     val webtoonInfoList by viewModel.webtoonInfoList.observeAsState(emptyList())
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        val navController = rememberNavController()
+    val navController = rememberNavController()
 
-        NavHost(
-            navController = navController,
-            startDestination = WebtoonScreen.Webtoon.name,
-            modifier = Modifier.padding(innerPadding),
-        ) {
-            composable(route = WebtoonScreen.Webtoon.name) {
-                WebtoonList() {
-                    navController.navigate(it) {
-                        launchSingleTop = true
-                        popUpTo(it) { inclusive = true }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            DrawerSheet(drawerState) {
+                navController.navigate(it) {
+                    launchSingleTop = true
+                    popUpTo(it) { inclusive = true }
+                }
+            }
+        },
+        gesturesEnabled = true,
+    ) {
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+
+
+            NavHost(
+                navController = navController,
+                startDestination = WebtoonScreen.Webtoon.name,
+                modifier = Modifier.padding(innerPadding),
+            ) {
+                composable(route = WebtoonScreen.Webtoon.name) {
+                    WebtoonList() {
+                        navController.navigate(it) {
+                            launchSingleTop = true
+                            popUpTo(it) { inclusive = true }
+                        }
                     }
                 }
-            }
-            composable(
-                route = WebtoonScreen.WebtoonInfo.name + "/{id}",
-                arguments = listOf(navArgument("id") {
-                    type = NavType.IntType
-                })
-            ) {
-                val id = it.arguments?.getInt("id") ?: -1
-                val webtoon = webtoonList.find { webtoon -> webtoon.id == id }
-                val author = authorList.find { author -> author.id == webtoon!!.authorid }
-                val webtoonInfo = webtoonInfoList.find { webtoonInfo -> webtoonInfo.webtoonid == id }
-                if (webtoon != null && author != null && webtoonInfo != null) {
-                    WebtoonInfo(webtoon, author, webtoonInfo)
+                composable(
+                    route = WebtoonScreen.WebtoonInfo.name + "/{id}",
+                    arguments = listOf(navArgument("id") {
+                        type = NavType.IntType
+                    })
+                ) {
+                    val id = it.arguments?.getInt("id") ?: -1
+                    val webtoon = webtoonList.find { webtoon -> webtoon.id == id }
+                    val author = authorList.find { author -> author.id == webtoon!!.authorid }
+                    val webtoonInfo =
+                        webtoonInfoList.find { webtoonInfo -> webtoonInfo.webtoonid == id }
+                    if (webtoon != null && author != null && webtoonInfo != null) {
+                        WebtoonInfo(webtoon, author, webtoonInfo)
+                    }
+                }
+                composable(route = WebtoonScreen.Author.name) {
+                    AuthorList()
                 }
             }
-            composable(route = WebtoonScreen.Author.name) {
-                AuthorList()
-            }
         }
+    }
+}
+
+@Composable
+fun DrawerSheet(
+    drawerState: DrawerState,
+    onNavigate: (String) -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+
+    ModalDrawerSheet {
+        NavigationDrawerItem(
+            label = { Text("웹툰 리스트") },
+            selected = false,
+            onClick = {
+                onNavigate(WebtoonScreen.Webtoon.name)
+                scope.launch {
+                    drawerState.close()
+                }
+            },
+            icon = {
+                Icon(
+                    Icons.Filled.Info,
+                    contentDescription = "웹툰 리스트 아이콘"
+                )
+            }
+        )
+        NavigationDrawerItem(
+            label = { Text("작가 리스트") },
+            selected = false,
+            onClick = {
+                onNavigate(WebtoonScreen.Author.name)
+                scope.launch {
+                    drawerState.close()
+                }
+            },
+            icon = {
+                Icon(
+                    Icons.Filled.Face,
+                    contentDescription = "작가 리스트 아이콘"
+                )
+            }
+        )
     }
 }
