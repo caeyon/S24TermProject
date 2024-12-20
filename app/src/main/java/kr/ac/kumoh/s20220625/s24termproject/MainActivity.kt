@@ -39,6 +39,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import kr.ac.kumoh.s20220625.s24termproject.ui.theme.S24TermProjectTheme
 
@@ -56,145 +59,33 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(viewModel: WebtoonViewModel = viewModel()) {
-    val authorList by viewModel.authorList.observeAsState(emptyList())
-    val webtoonList by viewModel.webtoonList.observeAsState(emptyList())
-    val webtoonInfoList by viewModel.webtoonInfoList.observeAsState(emptyList())
-
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        val navController = rememberNavController()
+
+        NavHost(
+            navController = navController,
+            startDestination = WebtoonScreen.Webtoon.name,
+            modifier = Modifier.padding(innerPadding),
+        ) {
+            composable(route = WebtoonScreen.Webtoon.name) {
+                WebtoonList()
+            }
+            composable(route = WebtoonScreen.WebtoonInfo.name) {
+                WebtoonInfo()
+            }
+            composable(route = WebtoonScreen.Author.name) {
+                AuthorList()
+            }
+        }
 //        AuthorList( //작가 리스트
 //            list = authorList,
 //            modifier = Modifier.padding(innerPadding)
 //        )
 
-        WebtoonList( //작가 리스트 같이 넘기기 추가
-            webtoonList = webtoonList,
-            authorList = authorList,
-            modifier = Modifier.padding(innerPadding)
-        )
+//        WebtoonList( //작가 리스트 같이 넘기기 추가
+//            webtoonList = webtoonList,
+//            authorList = authorList,
+//            modifier = Modifier.padding(innerPadding)
+//        )
     }
-}
-
-@Composable
-fun WebtoonList(webtoonList: List<Webtoon>, authorList: List<Author>, modifier: Modifier) {
-    LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp), //각 아이템 사이에 일정한 간격을 두고 배치
-        contentPadding = PaddingValues(horizontal = 8.dp) //콘텐츠(각 아이템) 내부의 패딩
-    ) {
-        items(webtoonList) { webtoon ->
-            val author = authorList.find { it.id == webtoon.authorid } //작가 이름 찾기
-            WebtoonItem(webtoon, author!!.name)
-        }
-    }
-}
-
-@Composable
-fun WebtoonItem(webtoon: Webtoon, author: String) {
-    Card(
-        elevation = CardDefaults.cardElevation(8.dp),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-                .padding(8.dp)
-        ) {
-            AsyncImage(
-                model = webtoon.thumbnailurl,
-                contentDescription = "웹툰 이미지 ${webtoon.title}",
-                modifier = Modifier
-                    .size(120.dp)
-                    //.clip(RoundedCornerShape(percent = 10)),
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center //수정 필요
-            ) {
-                TextTitle(webtoon.title)
-                TextAuthor(author)
-            }
-        }
-    }
-}
-
-@Composable
-fun AuthorList(list: List<Author>, modifier: Modifier) {
-    LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp), //각 아이템 사이에 일정한 간격을 두고 배치
-        contentPadding = PaddingValues(horizontal = 8.dp) //콘텐츠(각 아이템) 내부의 패딩
-    ) {
-        items(list) { author ->
-            AuthorItem(author)
-        }
-    }
-}
-
-@Composable
-fun AuthorItem(author: Author) {
-    var (expanded, setExpanded) = remember { mutableStateOf(false) }
-
-    Card(
-        modifier = Modifier
-            .clickable {
-                setExpanded(!expanded)
-            },
-        elevation = CardDefaults.cardElevation(8.dp),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-                .padding(8.dp)
-        ) {
-            AsyncImage(
-                model = author.imageurl,
-                contentDescription = "작가 이미지 ${author.name}",
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(RoundedCornerShape(percent = 10)),
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center
-            ) {
-                TextName(author.name)
-                TextBirth(author.birth)
-            }
-        }
-        AnimatedVisibility(
-            visible = expanded,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            author.serialwork.let {
-                Text(
-                    it.replace("\\n","\n"),
-                    //textAlign = TextAlign.Center,
-                )
-            }
-            //Uri 버튼 추가..
-        }
-    }
-}
-
-@Composable
-fun TextName(name: String) {
-    Text(name, fontSize = 30.sp)
-}
-
-@Composable
-fun TextBirth(birth: String) {
-    Text(birth, fontSize = 20.sp)
-}
-
-@Composable
-fun TextTitle(title: String) {
-    Text(title, fontSize = 30.sp)
-}
-
-@Composable
-fun TextAuthor(author: String) {
-    Text(author, fontSize = 20.sp)
 }
